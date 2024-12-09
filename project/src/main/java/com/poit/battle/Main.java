@@ -1,4 +1,4 @@
-package com.poit;
+package com.poit.battle;
 
 public class Main {
     public static void main(String[] args) {
