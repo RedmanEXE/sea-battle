@@ -1,7 +1,5 @@
 package com.poit.battle.checkers;
 
-import java.io.File;
-
 /**
  * Класс для проверки данных в игре
  */
@@ -10,9 +8,12 @@ public class DataChecker {
     /**
      * Класс, в котором хранятся возможные ошибки, касающиеся проверяемой карты
      */
-    public enum MapCheckError {
+    public enum FieldCheckError {
         // TODO: Добавить ошибки, которые будет возвращать метод для проверки правильности карты
         NONE,
+        FILE_NOT_AVAILABLE,
+        INVALID_DATA,
+        NOT_ENOUGH_DATA,
     }
 
     /**
@@ -21,10 +22,10 @@ public class DataChecker {
      * В случае правильности файла возвращает {@code NONE}.
      *
      * @param input Файл, из которого нужно проверить данные. В случае, если {@code null} – метод вернёт {@code false}.
-     * @return Объект из класса {@link MapCheckError} с ошибкой или {@code NONE}, если всё в порядке
+     * @return Объект из класса {@link FieldCheckError} с ошибкой или {@code NONE}, если всё в порядке
      */
-    public static MapCheckError isMapProperly(final File input) {
+    public static FieldCheckError isFieldProperly(final String[][] input) {
         // TODO: Реализовать статический метод для проверки файла на наличие верных данных
-        return MapCheckError.NONE;
+        return FieldCheckError.NONE;
     }
 }
