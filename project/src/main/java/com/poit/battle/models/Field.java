@@ -121,8 +121,28 @@ public class Field {
     public final boolean isInitialized() {
         return isInitialized;
     }
-
     public final Block getBlock(final int x, final int y) {
         return map[x][y];
     }
+    public final void printField() {
+        final int LETTER_A_ASCII = Character.getNumericValue('А');
+        System.out.print(' ');
+        for(int i = 0; i < 10; i++)
+            System.out.print((char)LETTER_A_ASCII + i);
+        System.out.println();
+        for(int i = 0; i < 10; i++) {
+            System.out.print(i + 1);;
+            for(int j = 0; j < 10; j++)
+                switch (map[i][j]) {
+                    case SHIP -> System.out.print("К");
+                    case SEA -> System.out.println(" ");
+                    case FIRED ->  System.out.print("Р");
+                    case KILLED -> System.out.print("У");
+                    case MISSED -> System.out.print(".");
+                }
+            System.out.println();
+        }
+
+    }
 }
+
