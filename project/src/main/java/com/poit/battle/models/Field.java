@@ -125,7 +125,7 @@ public class Field {
         return map[x][y];
     }
     public final void printField() {
-        final int LETTER_A_ASCII = 65;
+        final int LETTER_A_ASCII = Character.getNumericValue('А');
         System.out.print(' ');
         for(int i = 0; i < 10; i++)
             System.out.print((char)LETTER_A_ASCII + i);
