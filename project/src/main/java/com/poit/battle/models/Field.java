@@ -127,11 +127,11 @@ public class Field {
     public final void printField() {
         final int LETTER_A_ASCII = 65;
         System.out.print(' ');
-        for(int i = 1; i <= 10; i++)
-            System.out.print(i);
+        for(int i = 0; i < 10; i++)
+            System.out.print((char)LETTER_A_ASCII + i);
         System.out.println();
         for(int i = 0; i < 10; i++) {
-            System.out.print((char)LETTER_A_ASCII + i);
+            System.out.print(i + 1);;
             for(int j = 0; j < 10; j++)
                 switch (map[i][j]) {
                     case SHIP -> System.out.print("К");
