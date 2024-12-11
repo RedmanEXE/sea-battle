@@ -27,9 +27,9 @@ public class Main {
                 System.out.println("Промах!");
                 playerUnderFire = (playerUnderFire.equals(player1) ? player2 : player1);
                 firingPlayer = (firingPlayer.equals(player1) ? player2 : player1);
-
             }
         }while(!playerUnderFire.isGameOver());
+        scanner.close();
         //TODO : Реализовать выбор победителя и вывод соответствующего сообщения
     }
 
