@@ -21,6 +21,7 @@ import java.io.FileReader;
 public class Field {
     // Внутренняя реализация карты в виде матрицы 10х10 из объектов блоков
     private final Block[][] map = new Block[10][10];
+    private boolean isInitialized = false;
     // Внутренний сборщик карты из данных в матрице 10х10
     private static boolean buildMapFromData(final String[][] input, Field field) {
         for (int x = 0; x < 10; x++)
@@ -55,6 +56,34 @@ public class Field {
     public Field() {}
 
     /**
+     * Помечает клетку на поле как обстрелянную. У этого метода есть два поведения:<br />
+     * - Если клетка была {@code Block.SEA}, то она превращается в {@code Block.MISSED}, и считается, что игрок промахнулся;<br />
+     * - Если клетка была {@code Block.SHIP}, то она превращается в {@code Block.FIRED}, и считается, что игрок попал.
+     * <p />
+     * Кроме того метод автоматически проверяет следующую ситуацию:<br />
+     * Если метод обнаруживает ряд клеток {@code Block.FIRED} (то есть корабль полностью подбит),
+     * то он автоматически превращает этот ряд в {@code Block.KILLED}.
+     * <p />
+     * Метод также автоматически проверяет, чтобы клетка не была обстреляна.
+     * В случае, если выстрел обнаружен, то метод вернёт {@code false}.
+     * <p />
+     * <b>Этот метод требует полностью инициализированную карту!</b>
+     *
+     * @param x Координата X клетки, которую необходимо пометить обстрелянной
+     * @param y Координата Y клетки, которую необходимо пометить обстрелянной
+     * @return {@code false}, если клетка не может быть помечена обстрелянной, в противном случае {@code true}
+     * @throws FieldNotInitializedException если метод вызывается из объекта, который не был до конца инициализирован
+     */
+    public boolean fire(final int x, final int y) throws FieldNotInitializedException {
+        if (!this.isInitialized())
+            throw new FieldNotInitializedException("Field object has not been initialized");
+        // TODO: Добавить реализацию метода выстрела
+
+
+        return false;
+    }
+
+    /**
      * Инициализирует объект с помощью информации из файла.
      * <p>
      * В случае, если файл содержит неверную информацию или происходит
@@ -64,7 +93,7 @@ public class Field {
      * @param file Файл, путь которого ведёт до данных с картой
      * @return Объект из класса {@link DataChecker.FieldCheckError} с ошибкой или {@code NONE}, если всё в порядке
      */
-    public DataChecker.FieldCheckError initFromFile(final File file) {
+    public final DataChecker.FieldCheckError initFromFile(final File file) {
         String[][] input = new String[10][10];
         String[] line;
         try (FileReader reader = new FileReader(file); BufferedReader bufferedReader = new BufferedReader(reader)) {
@@ -80,11 +109,20 @@ public class Field {
             if (checkResult == DataChecker.FieldCheckError.NONE) {
                 if (!Field.buildMapFromData(input, this))
                     return DataChecker.FieldCheckError.INVALID_DATA;
+                else
+                    isInitialized = true;
             } else return checkResult;
         } catch (Exception e) {
             return DataChecker.FieldCheckError.FILE_NOT_AVAILABLE;
         }
 
         return DataChecker.FieldCheckError.NONE;
+    }
+    public final boolean isInitialized() {
+        return isInitialized;
+    }
+
+    public final Block getBlock(final int x, final int y) {
+        return map[x][y];
     }
 }
