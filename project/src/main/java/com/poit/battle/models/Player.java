@@ -6,7 +6,7 @@ public class Player {
     public Player(Field field) {
         this.field = field;
     }
-
+    public Field getField() {return field;}
     public boolean isGameOver(){
         boolean gameOver = true;
         for(int i = 0; i < 10 ; i++)
