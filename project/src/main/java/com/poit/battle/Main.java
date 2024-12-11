@@ -10,9 +10,12 @@ public class Main {
 
     static void playGame(Player player1, Player player2) {
         Player playerUnderFire = player2;
+        Player firingPlayer = player1;
         Scanner scanner = new Scanner(System.in);
         int x, y;
+        //TODO : Поясняющие выводы
         do {
+            firingPlayer.getField().printField();
             x = scanner.nextInt();
             y = scanner.nextInt();
             //TODO : Реализовать проверку корректности ввода
@@ -23,6 +26,7 @@ public class Main {
             {
                 System.out.println("Промах!");
                 playerUnderFire = (playerUnderFire.equals(player1) ? player2 : player1);
+                firingPlayer = (firingPlayer.equals(player1) ? player2 : player1);
             }
         }while(!playerUnderFire.isGameOver());
         //TODO : Реализовать выбор победителя и вывод соответствующего сообщения
