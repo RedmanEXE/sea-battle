@@ -118,20 +118,37 @@ public class Field {
 
         return DataChecker.FieldCheckError.NONE;
     }
+
+    /**
+     * Возвращает значение в зависимости от того, инициализировано
+     * ли игровое поле
+     *
+     * @return {@code true}, если объект инициализирован, {@code false} в обратном случае
+     */
     public final boolean isInitialized() {
         return isInitialized;
     }
+
+    /**
+     * Возвращает блок по координатам X и Y из игрового поля
+     *
+     * @param x Координата X клетки, которую необходимо вернуть
+     * @param y Координата Y клетки, которую необходимо вернуть
+     * @return Объект класса {@link Block}, который находится по этим координатам
+     */
     public final Block getBlock(final int x, final int y) {
         return map[x][y];
     }
+
+    // TODO: Удалить этот метод, когда будет переход на графический интерфейс
     public final void printField() {
         final int LETTER_A_ASCII = Character.getNumericValue('А');
         System.out.print(' ');
         for(int i = 0; i < 10; i++)
-            System.out.print((char)LETTER_A_ASCII + i);
+            System.out.print((char) LETTER_A_ASCII + i);
         System.out.println();
         for(int i = 0; i < 10; i++) {
-            System.out.print(i + 1);;
+            System.out.print(i + 1);
             for(int j = 0; j < 10; j++)
                 switch (map[i][j]) {
                     case SHIP -> System.out.print("К");

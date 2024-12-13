@@ -16,19 +16,9 @@ public class DataChecker {
         NOT_ENOUGH_DATA,
     }
 
-    /**
-     * Проверяет, является ли карта и установленные на ней корабли верными.
-     * Возвращает определённые ошибки, которые указывают на то, что неверно в выбранной карте!
-     * В случае правильности файла возвращает {@code NONE}.
-     *
-     * @param input Файл, из которого нужно проверить данные. В случае, если {@code null} – метод вернёт {@code false}.
-     * @return Объект из класса {@link FieldCheckError} с ошибкой или {@code NONE}, если всё в порядке
-     */
-    public static boolean isShipNearby(String[][] input, Boolean[][] checkMatrix, int i, int j) {
-
+    private static boolean isShipNearby(String[][] input, Boolean[][] checkMatrix, int i, int j) {
         int[] dx = {-1, -1, -1, 0, 0, 1, 1, 1};
         int[] dy = {-1, 0, 1, -1, 1, -1, 0, 1};
-
 
         for (int dir = 0; dir < 8; dir++) {
             int ni = i + dx[dir];
@@ -43,12 +33,11 @@ public class DataChecker {
         return false;
     }
 
-    public static int FindShip(String[][] input, Boolean[][] check, int i, int j) {
+    private static int findShip(String[][] input, Boolean[][] check, int i, int j) {
         int counter = 1;
         boolean findHor = false;
         boolean findVert = false;
 
-        int[] collectOfShip = {0, 0, 0, 0};
         check[i][j] = true;
 
         for (int k = 1; k < 4; k++) {
@@ -67,14 +56,14 @@ public class DataChecker {
         return counter;
     }
 
-    public static FieldCheckError processMatrix(String[][] input, Boolean[][] checkMatrix) {
+    private static FieldCheckError processMatrix(String[][] input, Boolean[][] checkMatrix) {
         boolean shipNear;
         int[] collectOfShip = {0, 0, 0, 0};
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 if (input[i][j].equals("K") && !checkMatrix[i][j]) { // Если найдена часть корабля
-                    collectOfShip[FindShip(input, checkMatrix, i, j)]++;
-                    shipNear = isShipNearby(input, checkMatrix, i, j);
+                    collectOfShip[DataChecker.findShip(input, checkMatrix, i, j)]++;
+                    shipNear = DataChecker.isShipNearby(input, checkMatrix, i, j);
                     if (shipNear) return FieldCheckError.INVALID_DATA;
                 }
             }
@@ -84,16 +73,25 @@ public class DataChecker {
         }
         return FieldCheckError.NONE;
     }
-    
+
+    /**
+     * Проверяет, является ли карта и установленные на ней корабли верными.
+     * Возвращает определённые ошибки, которые указывают на то, что неверно в выбранной карте!
+     * В случае правильности файла возвращает {@code NONE}.
+     *
+     * @param input Матрица с данными, из которой нужно проверить поле. В случае, если {@code null} – метод вернёт {@code false}.
+     * @return Объект из класса {@link FieldCheckError} с ошибкой или {@code NONE}, если всё в порядке
+     */
     public static FieldCheckError isFieldProperly(final String[][] input) {
-        // TODO: Реализовать статический метод для проверки файла на наличие верных данных
+        // TODO: Реализовать статический метод для проверки входа на наличие верных данных
+        FieldCheckError error;
         Boolean[][] checkMatrix = new Boolean[10][10];
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 checkMatrix[i][j] = false;
             }
         }
-        codeError = processMatrix(input, checkMatrix);
-        return codeError;
+        error = processMatrix(input, checkMatrix);
+        return error;
     }
 }
