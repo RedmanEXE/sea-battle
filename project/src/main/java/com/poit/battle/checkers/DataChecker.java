@@ -1,5 +1,8 @@
 package com.poit.battle.checkers;
 
+import java.io.*;
+import java.net.URLConnection;
+
 /**
  * Класс для проверки данных в игре
  */
@@ -86,12 +89,54 @@ public class DataChecker {
         // TODO: Реализовать статический метод для проверки входа на наличие верных данных
         FieldCheckError error;
         Boolean[][] checkMatrix = new Boolean[10][10];
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) { // А зачем?
             for (int j = 0; j < 10; j++) {
                 checkMatrix[i][j] = false;
             }
         }
         error = processMatrix(input, checkMatrix);
         return error;
+    }
+
+    /**
+     * Проверяет, является ли тип файл картой для игры.
+     * <p />
+     * Файлы карт для игры имеют расширение {@code .shf}.
+     *
+     * @param filePath Путь до проверяемого файла
+     * @return {@code true}, если файл имеет требуемое расширение, {@code false}, если нет
+     */
+    public static boolean isShipsFile(String filePath) {
+        String type = URLConnection.guessContentTypeFromName(filePath);
+        return type.equals("application/x-shf");
+    }
+
+    /**
+     * Проверяет, является ли файл доступным в требуемом режиме.
+     * <p />
+     * Проверка происходит с помощью открытия файл для чтения и записи,
+     * а после любой доступ к файлу закрывается.
+     *
+     * @param filePath Путь до проверяемого файла
+     * @param read Параметр для требуемого режима проверки: {@code true}, если требуется
+     *             проверка файла на доступность для чтения, {@code false}, если для записи
+     * @return {@code true}, если файл доступен в требуемом режиме; {@code false}, если нет
+     */
+    public static boolean checkFileAvailability(final String filePath, final boolean read) {
+        boolean fl;
+        fl = true;
+        try {
+            File file = new File(filePath);
+            if (!read) {
+                BufferedWriter fileWriter = new BufferedWriter(new FileWriter(file));
+                fileWriter.close();
+            } else {
+                BufferedReader fileReader = new BufferedReader(new FileReader(file));
+                fileReader.close();
+            }
+        } catch (Exception e) {
+            fl = false;
+        }
+        return fl;
     }
 }

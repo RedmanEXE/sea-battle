@@ -7,7 +7,7 @@ package com.poit.battle.models;
  * не проиграл ли данный игрой.
  */
 public class Player {
-    private Field field;
+    private final Field field;
 
     /**
      * Стандартный конструктор для объекта игрока

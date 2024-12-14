@@ -1,42 +1,85 @@
 package com.poit.battle;
 
+import com.poit.battle.checkers.DataChecker;
+import com.poit.battle.io.ConsoleUtils;
+import com.poit.battle.io.KeyboardInput;
+import com.poit.battle.models.Field;
 import com.poit.battle.models.Player;
 import com.poit.battle.models.Ship;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.Scanner;
 
 public class Main {
-
-    static boolean isValidPosition(int x, int y) {return 0 <= x && x <= 9 && 0 <= y && y <= 9;}
-    static void playGame(Player player1, Player player2) {
+    private static void playGame(@NotNull final KeyboardInput keyboardInput, @NotNull Player player1, @NotNull Player player2) {
         Player playerUnderFire = player2;
         Player firingPlayer = player1;
         Scanner scanner = new Scanner(System.in);
         int x, y;
         do {
-            System.out.println((firingPlayer.equals(player1) ? "ХОД 1-ГО ИГРОКА" : "Ход 2-ГО ИГРОКА"));
+            ConsoleUtils.clearConsole();
+            System.out.println((firingPlayer.equals(player1) ? "Ход 1-го игрока\n" : "Ход 2-го игрока\n"));
+            System.out.println("Поле противника:");
             firingPlayer.getField().printField();
-            System.out.println();
-            System.out.println((firingPlayer.equals(player1) ? "1-Й ИГРОК ВВЕДИТЕ КООРДИНАТЫ:" : "2-Й ИГРОК ВВЕДИТЕ КООРДИНАТЫ:"));
-            x = scanner.nextInt();
-            y = scanner.nextInt();
-            //TODO : Реализовать проверку корректности ввода
-            playerUnderFire.getField().fire(x, y);
-            if (Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x, y))) {
-                System.out.println("ПОПАДАНИЕ!");
+            System.out.println("\nВвод координат для выстрела:");
+            x = keyboardInput.takeIntegerInRange("Строка: ", 1, 10) - 1;
+            y = keyboardInput.takeIntegerInRange("Столбец: ", 1, 10) - 1;
+            while (!playerUnderFire.getField().fire(x, y)) {
+                ConsoleUtils.clearConsole();
+                System.out.println((firingPlayer.equals(player1) ? "Ход 1-го игрока\n" : "Ход 2-го игрока\n"));
+                System.out.println("Поле противника:");
+                firingPlayer.getField().printField();
+                System.out.println("По этим координатам нельзя выстрелить, так как ранее по нём уже был проведён удар!\nВведите другие координаты:");
+                x = keyboardInput.takeIntegerInRange("Строка: ", 1, 10) - 1;
+                y = keyboardInput.takeIntegerInRange("Столбец: ", 1, 10) - 1;
             }
-            else
-            {
-                System.out.println("ПРОМАХ!");
+
+            if (Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x, y)))
+                System.out.println("\nПопадание!\n");
+            else {
+                System.out.println("\nПромах!\n");
                 playerUnderFire = (playerUnderFire.equals(player1) ? player2 : player1);
                 firingPlayer = (firingPlayer.equals(player1) ? player2 : player1);
             }
-        }while(!playerUnderFire.isGameOver());
+
+            System.out.println(playerUnderFire.isGameOver()
+                    ? "Нажмите [ENTER], чтобы перейти к результатам!"
+                    : "Нажмите [ENTER], чтобы перейти к следующему ходу!");
+        } while(!playerUnderFire.isGameOver());
         scanner.close();
-        System.out.println((firingPlayer.equals(player1) ? "ПОБЕДА ИГРОКА НОМЕР 1!" : "ПОБЕДА ИГРОКА НОМЕР 2!"));
+        System.out.println((firingPlayer.equals(player1) ? "Победил игрок 1!" : "Победил игрок 2!"));
+    }
+
+    private static void initField(@NotNull final KeyboardInput keyboardInput, @NotNull final Field field, final int playerIndex) {
+        while (!field.isInitialized()) {
+            File player1File = keyboardInput.takeFile("Введите файл с картой для " + playerIndex + " игрока (.shf-файл): ", true,
+                    (filepath) -> DataChecker.checkFileAvailability(filepath, true) && DataChecker.isShipsFile(filepath)
+            );
+            DataChecker.FieldCheckError checkError = field.initFromFile(player1File);
+            if (checkError != DataChecker.FieldCheckError.NONE) {
+                switch (checkError) {
+                    case FILE_NOT_AVAILABLE -> System.out.println("Этот файл недоступен или занят другой программой! Введите путь до другого файла!");
+                    case INVALID_DATA -> System.out.println("В этой карте содержатся неверные символы! Введите путь до другого файла!");
+                    case NOT_ENOUGH_DATA -> System.out.println("В этом файле недостаточно данных! Введите путь до другого файла!");
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        KeyboardInput keyboardInput = new KeyboardInput();
+
+        Field player1Field = new Field();
+        Main.initField(keyboardInput, player1Field, 1);
+        Player player1 = new Player(player1Field);
+
+        Field player2Field = new Field();
+        Main.initField(keyboardInput, player2Field, 2);
+        Player player2 = new Player(player2Field);
+
+        Main.playGame(keyboardInput, player1, player2);
+
+        keyboardInput.holdInput();
     }
 }
