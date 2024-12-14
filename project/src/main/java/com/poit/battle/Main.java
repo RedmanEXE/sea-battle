@@ -1,6 +1,7 @@
 package com.poit.battle;
 
 import com.poit.battle.models.Player;
+import com.poit.battle.models.Ship;
 
 import java.util.Scanner;
 
@@ -20,7 +21,8 @@ public class Main {
             x = scanner.nextInt();
             y = scanner.nextInt();
             //TODO : Реализовать проверку корректности ввода
-            if (playerUnderFire.getField().fire(x, y)) {
+            playerUnderFire.getField().fire(x, y);
+            if (Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x, y))) {
                 System.out.println("ПОПАДАНИЕ!");
             }
             else
