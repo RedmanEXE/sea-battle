@@ -77,10 +77,27 @@ public class Field {
     public boolean fire(final int x, final int y) throws FieldNotInitializedException {
         if (!this.isInitialized())
             throw new FieldNotInitializedException("Field object has not been initialized");
-        // TODO: Добавить реализацию метода выстрела
 
+        if (this.map[x][y] == Block.KILLED || this.map[x][y] == Block.MISSED || this.map[x][y] == Block.FIRED)
+            return false;
 
-        return false;
+        if (this.map[x][y] == Block.SHIP) {
+            this.map[x][y] = Block.FIRED;
+            Ship ship = Ship.find(this.map, x, y);
+            if (ship != null && ship.size == ship.firedSize) {
+                if (ship.direction == Ship.Direction.VERTICAL)
+                    for (int i = ship.beginY; i < ship.size; i++)
+                        this.map[x][i] = Block.KILLED;
+                else if (ship.direction == Ship.Direction.HORIZONTAL)
+                    for (int i = ship.beginX; i < ship.size; i++)
+                        this.map[i][y] = Block.KILLED;
+                else
+                    this.map[x][y] = Block.KILLED;
+            }
+        } else if (this.map[x][y] == Block.SEA)
+            this.map[x][y] = Block.MISSED;
+
+        return true;
     }
 
     /**
@@ -141,7 +158,10 @@ public class Field {
     }
 
     // TODO: Удалить этот метод, когда будет переход на графический интерфейс
-    public final void printField() {
+    public final void printField() throws FieldNotInitializedException {
+        if (!this.isInitialized())
+            throw new FieldNotInitializedException("Field object has not been initialized");
+
         final int LETTER_A_ASCII = Character.getNumericValue('А');
         System.out.print(' ');
         for(int i = 0; i < 10; i++)
