@@ -69,6 +69,11 @@ public class Main {
 
     public static void main(String[] args) {
         KeyboardInput keyboardInput = new KeyboardInput();
+        System.out.println("Прототип игры морского боя\nНажмите [ENTER] для начала игры!");
+        keyboardInput.holdInput();
+
+        ConsoleUtils.clearConsole();
+        System.out.println("Прототип игры морского боя\n");
 
         Field player1Field = new Field();
         Main.initField(keyboardInput, player1Field, 1);
@@ -81,5 +86,7 @@ public class Main {
         Main.playGame(keyboardInput, player1, player2);
 
         keyboardInput.holdInput();
+
+        keyboardInput.close();
     }
 }
