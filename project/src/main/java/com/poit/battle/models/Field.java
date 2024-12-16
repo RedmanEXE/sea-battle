@@ -78,24 +78,24 @@ public class Field {
         if (!this.isInitialized())
             throw new FieldNotInitializedException("Field object has not been initialized");
 
-        if (this.map[x][y] == Block.KILLED || this.map[x][y] == Block.MISSED || this.map[x][y] == Block.FIRED)
+        if (this.map[y][x] == Block.KILLED || this.map[y][x] == Block.MISSED || this.map[y][x] == Block.FIRED)
             return false;
 
-        if (this.map[x][y] == Block.SHIP) {
-            this.map[x][y] = Block.FIRED;
+        if (this.map[y][x] == Block.SHIP) {
+            this.map[y][x] = Block.FIRED;
             Ship ship = Ship.find(this.map, x, y);
             if (ship != null && ship.size == ship.firedSize) {
                 if (ship.direction == Ship.Direction.VERTICAL)
-                    for (int i = ship.beginY; i < ship.size; i++)
-                        this.map[x][i] = Block.KILLED;
+                    for (int i = 0; i < ship.size; i++)
+                        this.map[ship.beginY + i][x] = Block.KILLED;
                 else if (ship.direction == Ship.Direction.HORIZONTAL)
-                    for (int i = ship.beginX; i < ship.size; i++)
-                        this.map[i][y] = Block.KILLED;
+                    for (int i = 0; i < ship.size; i++)
+                        this.map[y][ship.beginX + i] = Block.KILLED;
                 else
-                    this.map[x][y] = Block.KILLED;
+                    this.map[y][x] = Block.KILLED;
             }
-        } else if (this.map[x][y] == Block.SEA)
-            this.map[x][y] = Block.MISSED;
+        } else if (this.map[y][x] == Block.SEA)
+            this.map[y][x] = Block.MISSED;
 
         return true;
     }
@@ -130,7 +130,8 @@ public class Field {
                     isInitialized = true;
             } else return checkResult;
         } catch (Exception e) {
-            return DataChecker.FieldCheckError.FILE_NOT_AVAILABLE;
+            throw new RuntimeException(e);
+            //return DataChecker.FieldCheckError.FILE_NOT_AVAILABLE;
         }
 
         return DataChecker.FieldCheckError.NONE;
@@ -154,7 +155,7 @@ public class Field {
      * @return Объект класса {@link Block}, который находится по этим координатам
      */
     public final Block getBlock(final int x, final int y) {
-        return map[x][y];
+        return map[y][x];
     }
 
     // TODO: Удалить этот метод, когда будет переход на графический интерфейс
@@ -163,23 +164,21 @@ public class Field {
             throw new FieldNotInitializedException("Field object has not been initialized");
 
         final int LETTER_A_ASCII = Character.getNumericValue('А');
-        System.out.print(' ');
-        for(int i = 0; i < 10; i++)
-            System.out.print((char) LETTER_A_ASCII + i);
-        System.out.println();
+        System.out.println("   А Б В Г Д Е Ж З И К");
         for(int i = 0; i < 10; i++) {
-            System.out.print(i + 1);
+            if (i + 1 < 10)
+                System.out.print((i + 1) + "  ");
+            else
+                System.out.print((i + 1) + " ");
             for(int j = 0; j < 10; j++)
                 switch (map[i][j]) {
-                    case SHIP -> System.out.print("К");
-                    case SEA -> System.out.println(" ");
-                    case FIRED ->  System.out.print("Р");
-                    case KILLED -> System.out.print("У");
-                    case MISSED -> System.out.print(".");
+                    case SHIP, SEA -> System.out.print("  ");
+                    case FIRED ->  System.out.print("Р ");
+                    case KILLED -> System.out.print("У ");
+                    case MISSED -> System.out.print(". ");
                 }
             System.out.println();
         }
-
     }
 }
 
