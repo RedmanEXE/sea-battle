@@ -1,7 +1,6 @@
 package com.poit.battle.checkers;
 
 import java.io.*;
-import java.net.URLConnection;
 
 /**
  * Класс для проверки данных в игре

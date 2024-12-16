@@ -84,7 +84,7 @@ public class Ship {
 
         // Если корабль единичный, то какой смысл нам что-то дальше считать :)
         if (direction == Direction.SINGLE)
-            return new Ship(size, Ship.isFiredShipBlock(map[x][y]) ? 1 : 0, beginX, beginY, direction);
+            return new Ship(size, Ship.isFiredShipBlock(map[y][x]) ? 1 : 0, beginX, beginY, direction);
 
         int firedSize = Ship.isFiredShipBlock(map[y][x]) ? 1 : 0; // Количество клеток, которые у корабля подбиты
 

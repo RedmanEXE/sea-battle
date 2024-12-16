@@ -9,13 +9,11 @@ import com.poit.battle.models.Ship;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Scanner;
 
 public class Main {
     private static void playGame(@NotNull final KeyboardInput keyboardInput, @NotNull Player player1, @NotNull Player player2) {
         Player playerUnderFire = player2;
         Player firingPlayer = player1;
-        Scanner scanner = new Scanner(System.in);
         int x, y;
         do {
             ConsoleUtils.clearConsole();
@@ -48,7 +46,6 @@ public class Main {
                     : "Нажмите [ENTER], чтобы перейти к следующему ходу!");
             keyboardInput.holdInput();
         } while(!playerUnderFire.isGameOver());
-        scanner.close();
         System.out.println((firingPlayer.equals(player1) ? "Победил игрок 1!" : "Победил игрок 2!"));
     }
 
@@ -70,6 +67,7 @@ public class Main {
 
     public static void main(String[] args) {
         KeyboardInput keyboardInput = new KeyboardInput();
+        ConsoleUtils.clearConsole();
         System.out.println("Прототип игры морского боя\nНажмите [ENTER] для начала игры!");
         keyboardInput.holdInput();
 
