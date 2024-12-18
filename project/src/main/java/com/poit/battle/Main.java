@@ -1,6 +1,7 @@
 package com.poit.battle;
 
 import com.poit.battle.checkers.DataChecker;
+import com.poit.battle.components.MapViewComponent;
 import com.poit.battle.io.ConsoleUtils;
 import com.poit.battle.io.KeyboardInput;
 import com.poit.battle.models.Field;
@@ -8,31 +9,30 @@ import com.poit.battle.models.Player;
 import com.poit.battle.models.Ship;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.File;
-import java.util.Scanner;
 
 public class Main {
     private static void playGame(@NotNull final KeyboardInput keyboardInput, @NotNull Player player1, @NotNull Player player2) {
         Player playerUnderFire = player2;
         Player firingPlayer = player1;
-        Scanner scanner = new Scanner(System.in);
         int x, y;
         do {
             ConsoleUtils.clearConsole();
             System.out.println((firingPlayer.equals(player1) ? "Ход 1-го игрока\n" : "Ход 2-го игрока\n"));
             System.out.println("Поле противника:");
-            firingPlayer.getField().printField();
+            playerUnderFire.getField().printField();
             System.out.println("\nВвод координат для выстрела:");
-            x = keyboardInput.takeIntegerInRange("Строка: ", 1, 10) - 1;
-            y = keyboardInput.takeIntegerInRange("Столбец: ", 1, 10) - 1;
+            y = keyboardInput.takeIntegerInRange("Строка: ", 1, 10) - 1;
+            x = keyboardInput.takeIntegerInRange("Столбец: ", 1, 10) - 1;
             while (!playerUnderFire.getField().fire(x, y)) {
                 ConsoleUtils.clearConsole();
                 System.out.println((firingPlayer.equals(player1) ? "Ход 1-го игрока\n" : "Ход 2-го игрока\n"));
                 System.out.println("Поле противника:");
-                firingPlayer.getField().printField();
+                playerUnderFire.getField().printField();
                 System.out.println("По этим координатам нельзя выстрелить, так как ранее по нём уже был проведён удар!\nВведите другие координаты:");
-                x = keyboardInput.takeIntegerInRange("Строка: ", 1, 10) - 1;
-                y = keyboardInput.takeIntegerInRange("Столбец: ", 1, 10) - 1;
+                y = keyboardInput.takeIntegerInRange("Строка: ", 1, 10) - 1;
+                x = keyboardInput.takeIntegerInRange("Столбец: ", 1, 10) - 1;
             }
 
             if (Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x, y)))
@@ -46,8 +46,8 @@ public class Main {
             System.out.println(playerUnderFire.isGameOver()
                     ? "Нажмите [ENTER], чтобы перейти к результатам!"
                     : "Нажмите [ENTER], чтобы перейти к следующему ходу!");
+            keyboardInput.holdInput();
         } while(!playerUnderFire.isGameOver());
-        scanner.close();
         System.out.println((firingPlayer.equals(player1) ? "Победил игрок 1!" : "Победил игрок 2!"));
     }
 
@@ -69,6 +69,18 @@ public class Main {
 
     public static void main(String[] args) {
         KeyboardInput keyboardInput = new KeyboardInput();
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setTitle("Battle");
+        frame.setSize(500, 500);
+        MapViewComponent mapViewComponent = new MapViewComponent();
+        frame.add(mapViewComponent);
+        frame.setResizable(false);
+        frame.setLocationRelativeTo(null);
+        frame.setAlwaysOnTop(true);
+        frame.setVisible(true);
+
+        ConsoleUtils.clearConsole();
         System.out.println("Прототип игры морского боя\nНажмите [ENTER] для начала игры!");
         keyboardInput.holdInput();
 
@@ -78,6 +90,8 @@ public class Main {
         Field player1Field = new Field();
         Main.initField(keyboardInput, player1Field, 1);
         Player player1 = new Player(player1Field);
+        mapViewComponent.setField(player1Field);
+        mapViewComponent.repaint();
 
         Field player2Field = new Field();
         Main.initField(keyboardInput, player2Field, 2);

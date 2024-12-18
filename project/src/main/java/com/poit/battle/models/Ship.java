@@ -9,36 +9,7 @@ import org.jetbrains.annotations.Nullable;
  * Создать объект этого класса можно с помощью статических
  * методов, которые находятся в этом классе
  */
-public class Ship {
-    private Ship(final int size, final int firedSize, final int beginX, final int beginY, final Direction direction) {
-        this.size = size;
-        this.direction = direction;
-        this.firedSize = firedSize;
-        this.beginX = beginX;
-        this.beginY = beginY;
-    }
-
-    /**
-     * Направление корабля
-     */
-    public final Direction direction;
-    /**
-     * Количество клеток, занятых кораблём
-     */
-    public final int size;
-    /**
-     * Количество клеток, занятых кораблём и которые были поражены
-     */
-    public final int firedSize;
-    /**
-     * Координата X корабля, которая ближе всего находится к 0 координатной плоскости
-     */
-    public final int beginX;
-    /**
-     * Координата Y корабля, которая ближе всего находится к 0 координатной плоскости
-     */
-    public final int beginY;
-
+public record Ship(int size, int firedSize, int beginX, int beginY, Direction direction) {
     /**
      * Класс, хранящий типы направлений корабля
      */
@@ -150,5 +121,18 @@ public class Ship {
      */
     public static boolean isFiredShipBlock(final Field.Block block) {
         return block == Field.Block.FIRED || block == Field.Block.KILLED;
+    }
+
+    /**
+     * Проверяет, является ли переданный блок прострелянным (то есть
+     * является {@code Block.MISSED}, {@code Block.FIRED} или {@code Block.KILLED} )
+     *
+     * @param block Блок, который нужно проверить на наличие прострела
+     *
+     * @return {@code true}, если является прострелянным блоком,
+     *         {@code false} в противном случае
+     */
+    public static boolean isFiredBlock(final Field.Block block) {
+        return block == Field.Block.MISSED || block == Field.Block.FIRED || block == Field.Block.KILLED;
     }
 }
