@@ -41,53 +41,54 @@ public record Ship(int size, int firedSize, int beginX, int beginY, Direction di
     public static Ship find(@NotNull final Field.Block[][] map, final int x, final int y) {
         Direction direction = Direction.SINGLE;
         int size = 1;
-        int firedSize = 0; // Количество клеток, которые у корабля подбиты
         int beginX = x;
         int beginY = y;
 
-        if (Ship.isShipBlock(map[x][y]))
+        if (!Ship.isShipBlock(map[y][x]))
             return null; // Если изначальная клетка не является кораблём, то нам нечего искать
 
         // Определяем направление корабля
-        if ((y > 0 && Ship.isShipBlock(map[x][y - 1])) || (y < 9 && Ship.isShipBlock(map[x][y + 1])))
+        if ((y > 0 && Ship.isShipBlock(map[y - 1][x])) || (y < 9 && Ship.isShipBlock(map[y + 1][x])))
             direction = Direction.VERTICAL;
-        else if ((x > 0 && Ship.isShipBlock(map[x - 1][y])) || (x < 9 && Ship.isShipBlock(map[x + 1][y])))
+        else if ((x > 0 && Ship.isShipBlock(map[y][x - 1])) || (x < 9 && Ship.isShipBlock(map[y][x + 1])))
             direction = Direction.HORIZONTAL;
 
         // Если корабль единичный, то какой смысл нам что-то дальше считать :)
         if (direction == Direction.SINGLE)
-            return new Ship(size, Ship.isFiredShipBlock(map[x][y]) ? 1 : 0, beginX, beginY, direction);
+            return new Ship(size, Ship.isFiredShipBlock(map[y][x]) ? 1 : 0, beginX, beginY, direction);
 
         // Вычисляем нулевые координаты корабля, то есть его начало относительно осей
-        while (beginX > 0 && beginY > 0)
+        while ((beginX > 0 && direction == Direction.HORIZONTAL) || (beginY > 0 && direction == Direction.VERTICAL))
             if (direction == Direction.VERTICAL) {
-                if (Ship.isShipBlock(map[beginX][beginY - 1]))
+                if (Ship.isShipBlock(map[beginY - 1][beginX]))
                     beginY--;
                 else
                     break;
             } else {
-                if (Ship.isShipBlock(map[beginX - 1][beginY]))
+                if (Ship.isShipBlock(map[beginY][beginX - 1]))
                     beginX--;
                 else
                     break;
             }
 
+        int firedSize = Ship.isFiredShipBlock(map[beginY][beginX]) ? 1 : 0; // Количество клеток, которые у корабля подбиты
+
         // Вычисляем размер корабля, зная его начальные координаты и направление
         int tempX = beginX;
         int tempY = beginY;
-        while (tempX < 9 && tempY < 9) {
+        while ((tempX < 9 && direction == Direction.HORIZONTAL) || (tempY < 9 && direction == Direction.VERTICAL)) {
             if (direction == Direction.VERTICAL) {
-                if (Ship.isShipBlock(map[tempX][tempY + 1])) {
+                if (Ship.isShipBlock(map[tempY + 1][tempX])) {
                     size++;
-                    if (Ship.isFiredShipBlock(map[tempX][tempY + 1]))
+                    if (Ship.isFiredShipBlock(map[tempY + 1][tempX]))
                         firedSize++;
                 } else
                     break;
                 tempY++;
             } else {
-                if (Ship.isShipBlock(map[tempX + 1][tempY])) {
+                if (Ship.isShipBlock(map[tempY][tempX + 1])) {
                     size++;
-                    if (Ship.isFiredShipBlock(map[tempX + 1][tempY]))
+                    if (Ship.isFiredShipBlock(map[tempY][tempX + 1]))
                         firedSize++;
                 } else
                     break;

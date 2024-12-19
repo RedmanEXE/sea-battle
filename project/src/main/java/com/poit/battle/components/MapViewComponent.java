@@ -133,6 +133,8 @@ public class MapViewComponent extends JComponent {
      */
     public final void setField(final @NotNull Field field) {
         this.field = field;
+        this.selectedBlockX = -1;
+        this.selectedBlockY = -1;
     }
 
     /**
@@ -145,5 +147,11 @@ public class MapViewComponent extends JComponent {
      */
     public final void setFireListener(final @Nullable MapViewFireListener listener) {
         this.mapViewFireListener = listener;
+    }
+
+    public final void selectBlock(final int x, final int y) {
+        this.selectedBlockX = x;
+        this.selectedBlockY = y;
+        repaint();
     }
 }
