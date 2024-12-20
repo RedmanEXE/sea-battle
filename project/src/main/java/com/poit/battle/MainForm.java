@@ -7,12 +7,15 @@ import com.poit.battle.components.MapViewComponent;
 import com.poit.battle.models.Field;
 import com.poit.battle.models.Player;
 import com.poit.battle.models.Ship;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ResourceBundle;
@@ -35,6 +38,9 @@ public class MainForm {
     private Field player1Field = new Field(), player2Field = new Field();
     private Player playerUnderFire, firingPlayer;
 
+    private String[] numbers = new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+    private String[] letters = new String[] {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
+
     public static void main(String[] args) {
         MainForm mainForm = new MainForm();
         mainForm.frame = new JFrame("MainForm");
@@ -54,8 +60,8 @@ public class MainForm {
                             mainForm.player2Field.initFromFile(mapForPlayer2) != DataChecker.FieldCheckError.NONE)
                         return;
 
-                    Player player1 = new Player(mainForm.player1Field);
-                    Player player2 = new Player(mainForm.player2Field);
+                    Player player1 = new Player(mainForm.player1Field, 1);
+                    Player player2 = new Player(mainForm.player2Field, 2);
 
                     mainForm.pathEditPlayer1.setVisible(false);
                     mainForm.pathEditPlayer2.setVisible(false);
@@ -65,12 +71,30 @@ public class MainForm {
                     mainForm.mapViewComponent.setVisible(true);
                     mainForm.mapLabelTitle.setVisible(true);
                     mainForm.coordsEdit.setVisible(true);
+                    mainForm.coordsEdit.getDocument().addDocumentListener(new DocumentListener() {
+                        @Override
+                        public void insertUpdate(DocumentEvent e) {
+                            mainForm.coordsFireButton.setEnabled(e.getDocument().getLength() >= 2 && e.getDocument().getLength() <= 3);
+                        }
+
+                        @Override
+                        public void removeUpdate(DocumentEvent e) {
+                            mainForm.coordsFireButton.setEnabled(e.getDocument().getLength() >= 2 && e.getDocument().getLength() <= 3);
+                        }
+
+                        @Override
+                        public void changedUpdate(DocumentEvent e) {
+                            mainForm.coordsFireButton.setEnabled(e.getDocument().getLength() >= 2 && e.getDocument().getLength() <= 3);
+                        }
+                    });
                     mainForm.coordsLabel.setVisible(true);
                     mainForm.coordsFireButton.setVisible(true);
                     mainForm.labelDescription.setText("<html>Для выбора позиции для удара,<br />нажмите дважды по нужной клетке на карте<br />Либо же введите координаты в поле ниже!</html>");
                     mainForm.frame.pack();
 
-                    mainForm.playGame(player1, player2);
+                    mainForm.playerUnderFire = player2;
+                    mainForm.firingPlayer = player1;
+                    mainForm.playGame();
                 }
             }
         });
@@ -82,10 +106,7 @@ public class MainForm {
         mainForm.frame.setVisible(true);
     }
 
-    private void playGame(@NotNull Player player1, @NotNull Player player2) {
-        playerUnderFire = player2;
-        firingPlayer = player1;
-
+    private void playGame() {
         JDialog dialog = new JDialog();
         JLabel label = new JLabel();
 
@@ -119,7 +140,7 @@ public class MainForm {
 
                 if (playerUnderFire.isGameOver()) {
                     JDialog gameOverDialog = new JDialog();
-                    JLabel gameOver = new JLabel("Игра окончена!\nПобедил игрок " + (firingPlayer.equals(player1) ? "1" : "2"));
+                    JLabel gameOver = new JLabel("Игра окончена!\nПобедил игрок " + firingPlayer.getPlayerIndex());
 
                     JButton gameOverButton = new JButton();
 
@@ -144,9 +165,10 @@ public class MainForm {
                 }
 
                 if (!Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x - 1, y - 1))) {
-                    playerUnderFire = (playerUnderFire.equals(player1) ? player2 : player1);
-                    firingPlayer = (firingPlayer.equals(player1) ? player2 : player1);
-                    mapLabelTitle.setText(firingPlayer.equals(player1) ? "<html> Ход 1-го игрока<br />Поле противника:</html>" : "<html>Ход 2-го игрока<br />Поле противника:</html>");
+                    Player buf = playerUnderFire;
+                    playerUnderFire = firingPlayer;
+                    firingPlayer = buf;
+                    mapLabelTitle.setText(firingPlayer.getPlayerIndex() == 1 ? "<html>Ход 1-го игрока<br />Поле противника:</html>" : "<html>Ход 2-го игрока<br />Поле противника:</html>");
                     mapViewComponent.setField(playerUnderFire.getField());
                     mapViewComponent.repaint();
                 }
@@ -205,6 +227,7 @@ public class MainForm {
         coordsLabel.setVisible(false);
         contentPane.add(coordsLabel, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         coordsFireButton = new JButton();
+        coordsFireButton.setEnabled(false);
         coordsFireButton.setLabel("Выстрелить");
         coordsFireButton.setText("Выстрелить");
         coordsFireButton.setVisible(false);

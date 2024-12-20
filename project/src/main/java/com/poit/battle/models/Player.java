@@ -8,14 +8,16 @@ package com.poit.battle.models;
  */
 public class Player {
     private final Field field;
+    private final int playerIndex;
 
     /**
      * Стандартный конструктор для объекта игрока
      *
      * @param field Объект класса {@link Field}, привязанный к этому игроку
      */
-    public Player(Field field) {
+    public Player(Field field, int playerIndex) {
         this.field = field;
+        this.playerIndex = playerIndex;
     }
 
     /**
@@ -25,6 +27,15 @@ public class Player {
      */
     public Field getField() {
         return field;
+    }
+
+    /**
+     * Метод для возвращения индекса игрока
+     *
+     * @return Индекс, привязанный к этому игроку
+     */
+    public int getPlayerIndex() {
+        return playerIndex;
     }
 
     /**

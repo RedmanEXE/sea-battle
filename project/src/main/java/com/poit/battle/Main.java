@@ -182,11 +182,11 @@ public class Main {
 
         Field player1Field = new Field();
         Main.initField(keyboardInput, player1Field, 1);
-        Player player1 = new Player(player1Field);
+        Player player1 = new Player(player1Field, 1);
 
         Field player2Field = new Field();
         Main.initField(keyboardInput, player2Field, 2);
-        Player player2 = new Player(player2Field);
+        Player player2 = new Player(player2Field, 2);
 
         Main.playGame(keyboardInput, player1, player2);
     }
