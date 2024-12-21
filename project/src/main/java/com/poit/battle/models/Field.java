@@ -1,6 +1,7 @@
 package com.poit.battle.models;
 
 import com.poit.battle.checkers.DataChecker;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -84,13 +85,13 @@ public class Field {
         if (this.map[y][x] == Block.SHIP) {
             this.map[y][x] = Block.FIRED;
             Ship ship = Ship.find(this.map, x, y);
-            if (ship != null && ship.size == ship.firedSize) {
-                if (ship.direction == Ship.Direction.VERTICAL)
-                    for (int i = 0; i < ship.size; i++)
-                        this.map[ship.beginY + i][x] = Block.KILLED;
-                else if (ship.direction == Ship.Direction.HORIZONTAL)
-                    for (int i = 0; i < ship.size; i++)
-                        this.map[y][ship.beginX + i] = Block.KILLED;
+            if (ship != null && ship.size() == ship.firedSize()) {
+                if (ship.direction() == Ship.Direction.VERTICAL)
+                    for (int i = 0; i < ship.size(); i++)
+                        this.map[ship.beginY() + i][x] = Block.KILLED;
+                else if (ship.direction() == Ship.Direction.HORIZONTAL)
+                    for (int i = 0; i < ship.size(); i++)
+                        this.map[y][ship.beginX() + i] = Block.KILLED;
                 else
                     this.map[y][x] = Block.KILLED;
             }
@@ -130,8 +131,7 @@ public class Field {
                     isInitialized = true;
             } else return checkResult;
         } catch (Exception e) {
-            throw new RuntimeException(e);
-            //return DataChecker.FieldCheckError.FILE_NOT_AVAILABLE;
+            return DataChecker.FieldCheckError.FILE_NOT_AVAILABLE;
         }
 
         return DataChecker.FieldCheckError.NONE;
@@ -154,7 +154,11 @@ public class Field {
      * @param y Координата Y клетки, которую необходимо вернуть
      * @return Объект класса {@link Block}, который находится по этим координатам
      */
+    @Nullable
     public final Block getBlock(final int x, final int y) {
+        if (x < 0 || x >= 10 || y < 0 || y >= 10)
+            return null;
+
         return map[y][x];
     }
 
@@ -179,6 +183,7 @@ public class Field {
                 }
             System.out.println();
         }
+
     }
 }
 
