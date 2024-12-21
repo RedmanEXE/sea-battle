@@ -41,7 +41,6 @@ public record Ship(int size, int firedSize, int beginX, int beginY, Direction di
     public static Ship find(@NotNull final Field.Block[][] map, final int x, final int y) {
         Direction direction = Direction.SINGLE;
         int size = 1;
-        int firedSize = 0; // Количество клеток, которые у корабля подбиты
         int beginX = x;
         int beginY = y;
 
