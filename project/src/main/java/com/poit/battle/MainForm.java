@@ -11,14 +11,11 @@ import com.poit.battle.models.Ship;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ResourceBundle;
+import java.util.HashSet;
+import java.util.List;
 
 public class MainForm {
     private JTextField pathEditPlayer1;
@@ -35,30 +32,89 @@ public class MainForm {
     private JButton coordsFireButton;
     private JFrame frame;
 
-    private Field player1Field = new Field(), player2Field = new Field();
+    private final Field player1Field = new Field();
+    private final Field player2Field = new Field();
     private Player playerUnderFire, firingPlayer;
 
-    private String[] numbers = new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
-    private String[] letters = new String[] {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
+    private final String[] numbers = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+    private final String[] letters = new String[]{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
+    private final HashSet<Character> allowedChars = new HashSet<>(
+            List.of('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ')
+    );
 
     public static void main(String[] args) {
         MainForm mainForm = new MainForm();
-        mainForm.frame = new JFrame("MainForm");
+        JDialog fileReadErrorDialog = new JDialog();
+        JLabel fileReadErrorLabel = new JLabel();
+
+        JButton fileReadErrorButton = new JButton();
+        fileReadErrorButton.setText("ОК");
+        fileReadErrorButton.addActionListener((e) -> {
+            fileReadErrorDialog.setVisible(false);
+        });
+
+        fileReadErrorDialog.setTitle("Ошибка чтения файлов");
+        fileReadErrorDialog.setModal(true);
+        fileReadErrorDialog.setAlwaysOnTop(true);
+        fileReadErrorDialog.setLocationRelativeTo(null);
+        fileReadErrorDialog.setResizable(false);
+        fileReadErrorDialog.setSize(450, 100);
+        fileReadErrorLabel.setVerticalAlignment(SwingConstants.CENTER);
+        fileReadErrorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        fileReadErrorDialog.add(fileReadErrorLabel);
+        fileReadErrorDialog.add(fileReadErrorButton, BorderLayout.SOUTH);
+
+        mainForm.frame = new JFrame("Морской бой");
         mainForm.playButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     File mapForPlayer1 = new File(mainForm.pathEditPlayer1.getText()), mapForPlayer2 = new File(mainForm.pathEditPlayer2.getText());
+
                     if (!DataChecker.isShipsFile(mainForm.pathEditPlayer1.getText()) ||
-                            !DataChecker.checkFileAvailability(mainForm.pathEditPlayer1.getText(), true) ||
-                            mainForm.player1Field.initFromFile(mapForPlayer1) != DataChecker.FieldCheckError.NONE)
+                            !DataChecker.checkFileAvailability(mainForm.pathEditPlayer1.getText(), true)) {
+                        fileReadErrorLabel.setText("Файл 1 игрока недоступен для чтения или не является .shf-файлом!");
+                        fileReadErrorDialog.setVisible(true);
                         return;
+                    } else {
+                        DataChecker.FieldCheckError checkError = mainForm.player1Field.initFromFile(mapForPlayer1);
+                        switch (checkError) {
+                            case INVALID_DATA ->
+                                fileReadErrorLabel.setText("Файл поля 1 игрока содержит неверные данные!");
+                            case FILE_NOT_AVAILABLE ->
+                                fileReadErrorLabel.setText("Файл 1 игрока недоступен для чтения!");
+                            case NOT_ENOUGH_DATA ->
+                                fileReadErrorLabel.setText("Файл 1 игрока имеет недостаточно данных!");
+                        }
+
+                        if (checkError != DataChecker.FieldCheckError.NONE) {
+                            fileReadErrorDialog.setVisible(true);
+                            return;
+                        }
+                    }
 
                     if (!DataChecker.isShipsFile(mainForm.pathEditPlayer2.getText()) ||
-                            !DataChecker.checkFileAvailability(mainForm.pathEditPlayer2.getText(), true) ||
-                            mainForm.player2Field.initFromFile(mapForPlayer2) != DataChecker.FieldCheckError.NONE)
+                            !DataChecker.checkFileAvailability(mainForm.pathEditPlayer2.getText(), true)) {
+                        fileReadErrorLabel.setText("Файл 2 игрока недоступен для чтения или не является .shf-файлом!");
+                        fileReadErrorDialog.setVisible(true);
                         return;
+                    } else {
+                        DataChecker.FieldCheckError checkError = mainForm.player2Field.initFromFile(mapForPlayer1);
+                        switch (checkError) {
+                            case INVALID_DATA ->
+                                    fileReadErrorLabel.setText("Файл 2 игрока содержит неверные данные!");
+                            case FILE_NOT_AVAILABLE ->
+                                    fileReadErrorLabel.setText("Файл 2 игрока недоступен для чтения!");
+                            case NOT_ENOUGH_DATA ->
+                                    fileReadErrorLabel.setText("Файл 2 игрока имеет недостаточно данных!");
+                        }
+
+                        if (checkError != DataChecker.FieldCheckError.NONE) {
+                            fileReadErrorDialog.setVisible(true);
+                            return;
+                        }
+                    }
 
                     Player player1 = new Player(mainForm.player1Field, 1);
                     Player player2 = new Player(mainForm.player2Field, 2);
@@ -74,17 +130,17 @@ public class MainForm {
                     mainForm.coordsEdit.getDocument().addDocumentListener(new DocumentListener() {
                         @Override
                         public void insertUpdate(DocumentEvent e) {
-                            mainForm.coordsFireButton.setEnabled(e.getDocument().getLength() >= 2 && e.getDocument().getLength() <= 3);
+                            mainForm.checkDataInCoordsEdit();
                         }
 
                         @Override
                         public void removeUpdate(DocumentEvent e) {
-                            mainForm.coordsFireButton.setEnabled(e.getDocument().getLength() >= 2 && e.getDocument().getLength() <= 3);
+                            mainForm.checkDataInCoordsEdit();
                         }
 
                         @Override
                         public void changedUpdate(DocumentEvent e) {
-                            mainForm.coordsFireButton.setEnabled(e.getDocument().getLength() >= 2 && e.getDocument().getLength() <= 3);
+                            mainForm.checkDataInCoordsEdit();
                         }
                     });
                     mainForm.coordsLabel.setVisible(true);
@@ -106,74 +162,127 @@ public class MainForm {
         mainForm.frame.setVisible(true);
     }
 
+    private void checkDataInCoordsEdit() {
+        coordsFireButton.setEnabled(false);
+        if (coordsEdit.getDocument().getLength() >= 2 && coordsEdit.getDocument().getLength() <= 4) {
+            String coords = coordsEdit.getText().toLowerCase();
+            int x = -1;
+            int y = -1;
+
+            for (int i = 0; i < coords.length(); i++)
+                if (!allowedChars.contains(coords.charAt(i)))
+                    return;
+
+            for (int i = numbers.length - 1; i >= 0; i--)
+                if (coords.contains(numbers[i])) {
+                    y = i;
+                    break;
+                }
+
+            for (int i = 0; i < letters.length; i++)
+                if (coords.contains(letters[i])) {
+                    x = i;
+                    break;
+                }
+
+            coordsFireButton.setEnabled((x != -1 && y != -1 && !Ship.isFiredBlock(playerUnderFire.getField().getBlock(x, y))));
+            if (coordsFireButton.isEnabled()) {
+                final int xF = x, yF = y;
+                coordsFireButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        MainForm.this.fireByCoords(xF + 1, yF + 1);
+                        coordsFireButton.removeActionListener(this);
+                        coordsFireButton.setEnabled(false);
+                    }
+                });
+            }
+        }
+    }
+
+    private void fireByCoords(final int x, final int y) {
+        if (!playerUnderFire.getField().fire(x - 1, y - 1))
+            System.out.println("This block cannot be fired");
+        else {
+            JDialog dialog = new JDialog();
+            JLabel label = new JLabel();
+
+            JButton button = new JButton();
+            button.setText("Дальше");
+            button.addActionListener((e) -> {
+                dialog.setVisible(false);
+            });
+
+            dialog.setTitle("Результат выстрела");
+            dialog.setModal(true);
+            dialog.setAlwaysOnTop(true);
+            dialog.setLocationRelativeTo(null);
+            dialog.setResizable(false);
+            dialog.setSize(300, 100);
+            label.setVerticalAlignment(SwingConstants.CENTER);
+            label.setHorizontalAlignment(SwingConstants.CENTER);
+            dialog.add(label);
+            dialog.add(button, BorderLayout.SOUTH);
+
+            mapViewComponent.selectBlock(-1, -1);
+            label.setText(Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x - 1, y - 1)) ? "Попадание!" : "Промах!");
+            dialog.setVisible(true);
+
+            if (playerUnderFire.isGameOver()) {
+                JDialog gameOverDialog = new JDialog();
+                JLabel gameOver = new JLabel("Игра окончена!\nПобедил игрок " + firingPlayer.getPlayerIndex());
+
+                JButton gameOverButton = new JButton();
+
+                gameOverDialog.setTitle("Конец игры");
+                gameOverDialog.setModal(true);
+                gameOverDialog.setAlwaysOnTop(true);
+                gameOverDialog.setLocationRelativeTo(null);
+                gameOverDialog.setResizable(false);
+                gameOverDialog.setSize(300, 100);
+                gameOver.setVerticalAlignment(SwingConstants.CENTER);
+                gameOver.setHorizontalAlignment(SwingConstants.CENTER);
+                gameOverDialog.add(gameOver);
+
+                gameOverButton.setText("ОК");
+                gameOverButton.addActionListener((e) -> {
+                    gameOverDialog.setVisible(false);
+
+                    pathEditPlayer1.setVisible(true);
+                    pathEditPlayer2.setVisible(true);
+                    pathLabelPlayer1.setVisible(true);
+                    pathLabelPlayer2.setVisible(true);
+                    playButton.setVisible(true);
+                    mapViewComponent.setVisible(false);
+                    mapLabelTitle.setVisible(false);
+                    coordsEdit.setVisible(false);
+                    coordsLabel.setVisible(false);
+                    coordsFireButton.setVisible(false);
+                    labelDescription.setText("Чтобы начать играть, введите пути до двух файлов с картами (.shf-файл)!");
+                    frame.pack();
+                });
+                gameOverDialog.add(gameOverButton, BorderLayout.SOUTH);
+
+                gameOverDialog.setVisible(true);
+                return;
+            }
+
+            if (!Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x - 1, y - 1))) {
+                Player buf = playerUnderFire;
+                playerUnderFire = firingPlayer;
+                firingPlayer = buf;
+                mapLabelTitle.setText(firingPlayer.getPlayerIndex() == 1 ? "<html>Ход 1-го игрока<br />Поле противника:</html>" : "<html>Ход 2-го игрока<br />Поле противника:</html>");
+                mapViewComponent.setField(playerUnderFire.getField());
+                mapViewComponent.repaint();
+            }
+        }
+    }
+
     private void playGame() {
-        JDialog dialog = new JDialog();
-        JLabel label = new JLabel();
-
-        JButton button = new JButton();
-        button.setText("Дальше");
-        button.addActionListener((e) -> {
-            dialog.setVisible(false);
-        });
-
-        dialog.setTitle("Battle");
-        dialog.setModal(true);
-        dialog.setAlwaysOnTop(true);
-        dialog.setLocationRelativeTo(null);
-        dialog.setResizable(false);
-        dialog.setSize(200, 100);
-        label.setVerticalAlignment(SwingConstants.CENTER);
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        dialog.add(label);
-        dialog.add(button, BorderLayout.SOUTH);
-
         mapLabelTitle.setText("<html> Ход 1-го игрока<br />Поле противника:</html>");
         mapViewComponent.setField(playerUnderFire.getField());
         mapViewComponent.repaint();
-        mapViewComponent.setFireListener((x, y) -> {
-            if (!playerUnderFire.getField().fire(x - 1, y - 1))
-                System.out.println("This block cannot be fired");
-            else {
-                mapViewComponent.selectBlock(-1, -1);
-                label.setText(Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x - 1, y - 1)) ? "Попадание!" : "Промах!");
-                dialog.setVisible(true);
-
-                if (playerUnderFire.isGameOver()) {
-                    JDialog gameOverDialog = new JDialog();
-                    JLabel gameOver = new JLabel("Игра окончена!\nПобедил игрок " + firingPlayer.getPlayerIndex());
-
-                    JButton gameOverButton = new JButton();
-
-                    gameOverDialog.setTitle("Battle");
-                    gameOverDialog.setModal(true);
-                    gameOverDialog.setAlwaysOnTop(true);
-                    gameOverDialog.setLocationRelativeTo(null);
-                    gameOverDialog.setResizable(false);
-                    gameOverDialog.setSize(300, 100);
-                    gameOver.setVerticalAlignment(SwingConstants.CENTER);
-                    gameOver.setHorizontalAlignment(SwingConstants.CENTER);
-                    gameOverDialog.add(gameOver);
-
-                    gameOverButton.setText("ОК");
-                    gameOverButton.addActionListener((e) -> {
-                        gameOverDialog.setVisible(false);
-                    });
-                    gameOverDialog.add(gameOverButton, BorderLayout.SOUTH);
-
-                    gameOverDialog.setVisible(true);
-                    return;
-                }
-
-                if (!Ship.isFiredShipBlock(playerUnderFire.getField().getBlock(x - 1, y - 1))) {
-                    Player buf = playerUnderFire;
-                    playerUnderFire = firingPlayer;
-                    firingPlayer = buf;
-                    mapLabelTitle.setText(firingPlayer.getPlayerIndex() == 1 ? "<html>Ход 1-го игрока<br />Поле противника:</html>" : "<html>Ход 2-го игрока<br />Поле противника:</html>");
-                    mapViewComponent.setField(playerUnderFire.getField());
-                    mapViewComponent.repaint();
-                }
-            }
-        });
+        mapViewComponent.setFireListener(this::fireByCoords);
     }
 
     {
@@ -195,14 +304,14 @@ public class MainForm {
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(8, 2, new Insets(10, 10, 10, 10), -1, -1));
         pathLabelPlayer1 = new JLabel();
-        this.$$$loadLabelText$$$(pathLabelPlayer1, this.$$$getMessageFromBundle$$$("values/strings", "form.pathEditPlayer1"));
+        pathLabelPlayer1.setText("Путь до карты 1-го игрока");
         contentPane.add(pathLabelPlayer1, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(168, 17), null, 0, false));
         pathLabelPlayer2 = new JLabel();
-        this.$$$loadLabelText$$$(pathLabelPlayer2, this.$$$getMessageFromBundle$$$("values/strings", "form.pathEditPlayer2"));
+        pathLabelPlayer2.setText("Путь до карты 2-го игрока");
         contentPane.add(pathLabelPlayer2, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(168, 17), null, 0, false));
         playButton = new JButton();
-        playButton.setLabel("Play");
-        playButton.setText("Play");
+        playButton.setLabel("Играть");
+        playButton.setText("Играть");
         contentPane.add(playButton, new GridConstraints(6, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         mapViewComponent = new MapViewComponent();
         mapViewComponent.setVisible(false);
@@ -235,50 +344,6 @@ public class MainForm {
         pathLabelPlayer1.setLabelFor(pathEditPlayer1);
         pathLabelPlayer2.setLabelFor(pathEditPlayer2);
         coordsLabel.setLabelFor(coordsEdit);
-    }
-
-    private static Method $$$cachedGetBundleMethod$$$ = null;
-
-    private String $$$getMessageFromBundle$$$(String path, String key) {
-        ResourceBundle bundle;
-        try {
-            Class<?> thisClass = this.getClass();
-            if ($$$cachedGetBundleMethod$$$ == null) {
-                Class<?> dynamicBundleClass = thisClass.getClassLoader().loadClass("com.intellij.DynamicBundle");
-                $$$cachedGetBundleMethod$$$ = dynamicBundleClass.getMethod("getBundle", String.class, Class.class);
-            }
-            bundle = (ResourceBundle) $$$cachedGetBundleMethod$$$.invoke(null, path, thisClass);
-        } catch (Exception e) {
-            bundle = ResourceBundle.getBundle(path);
-        }
-        return bundle.getString(key);
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    private void $$$loadLabelText$$$(JLabel component, String text) {
-        StringBuffer result = new StringBuffer();
-        boolean haveMnemonic = false;
-        char mnemonic = '\0';
-        int mnemonicIndex = -1;
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == '&') {
-                i++;
-                if (i == text.length()) break;
-                if (!haveMnemonic && text.charAt(i) != '&') {
-                    haveMnemonic = true;
-                    mnemonic = text.charAt(i);
-                    mnemonicIndex = result.length();
-                }
-            }
-            result.append(text.charAt(i));
-        }
-        component.setText(result.toString());
-        if (haveMnemonic) {
-            component.setDisplayedMnemonic(mnemonic);
-            component.setDisplayedMnemonicIndex(mnemonicIndex);
-        }
     }
 
     /**

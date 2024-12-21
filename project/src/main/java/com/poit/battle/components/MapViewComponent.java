@@ -48,7 +48,7 @@ public class MapViewComponent extends JComponent {
                 } else {
                     if (mapViewFireListener != null)
                         mapViewFireListener.onFire(selectedBlockX, selectedBlockY);
-                    System.out.println("This click requires attention!");
+                    // System.out.println("This click requires attention!");
                 }
             }
         };
