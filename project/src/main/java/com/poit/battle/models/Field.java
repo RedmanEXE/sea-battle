@@ -183,6 +183,7 @@ public class Field {
                 }
             System.out.println();
         }
+
     }
 }
 
