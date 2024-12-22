@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Jump into project folder
-    - run: cd project
+      run: cd project
     
     - uses: actions/checkout@v4
     - name: Set up JDK 17
@@ -58,7 +58,7 @@ jobs:
 
     steps:
     - name: Jump into project folder
-    - run: cd project
+      run: cd project
     
     - uses: actions/checkout@v4
     - name: Set up JDK 17
