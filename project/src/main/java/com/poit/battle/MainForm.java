@@ -36,9 +36,9 @@ public class MainForm {
     private final Field player2Field = new Field();
     private Player playerUnderFire, firingPlayer;
 
-    private final String[] numbers = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
-    private final String[] letters = new String[]{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
-    private final HashSet<Character> allowedChars = new HashSet<>(
+    private static final String[] numbers = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+    private static final String[] letters = new String[]{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
+    private static final HashSet<Character> allowedChars = new HashSet<>(
             List.of('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ')
     );
 
@@ -154,6 +154,40 @@ public class MainForm {
                 }
             }
         });
+        mainForm.coordsFireButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (mainForm.coordsEdit.getDocument().getLength() >= 2 && mainForm.coordsEdit.getDocument().getLength() <= 4) {
+                    String coords = mainForm.coordsEdit.getText().toLowerCase();
+                    int x = -1;
+                    int y = -1;
+
+                    for (int i = 0; i < coords.length(); i++)
+                        if (!allowedChars.contains(coords.charAt(i)))
+                            return;
+
+                    for (int i = numbers.length - 1; i >= 0; i--)
+                        if (coords.contains(numbers[i])) {
+                            if (y == -1)
+                                y = i;
+                            else
+                                return;
+                        }
+
+                    for (int i = 0; i < letters.length; i++)
+                        if (coords.contains(letters[i])) {
+                            if (x == -1)
+                                x = i;
+                            else
+                                return;
+                        }
+
+                    if (x != -1 && y != -1 && !Ship.isFiredBlock(mainForm.playerUnderFire.getField().getBlock(x, y)))
+                        mainForm.fireByCoords(x + 1, y + 1);
+                }
+                mainForm.coordsFireButton.setEnabled(false);
+            }
+        });
         mainForm.frame.setContentPane(mainForm.contentPane);
         mainForm.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainForm.frame.pack();
@@ -175,32 +209,26 @@ public class MainForm {
 
             for (int i = numbers.length - 1; i >= 0; i--)
                 if (coords.contains(numbers[i])) {
-                    y = i;
-                    break;
+                    if (y == -1)
+                        y = i;
+                    else if (y != 9 || i != 0)
+                        return;
                 }
 
             for (int i = 0; i < letters.length; i++)
                 if (coords.contains(letters[i])) {
-                    x = i;
-                    break;
+                    if (x == -1)
+                        x = i;
+                    else
+                        return;
                 }
 
             coordsFireButton.setEnabled((x != -1 && y != -1 && !Ship.isFiredBlock(playerUnderFire.getField().getBlock(x, y))));
-            if (coordsFireButton.isEnabled()) {
-                final int xF = x, yF = y;
-                coordsFireButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        MainForm.this.fireByCoords(xF + 1, yF + 1);
-                        coordsFireButton.removeActionListener(this);
-                        coordsFireButton.setEnabled(false);
-                    }
-                });
-            }
         }
     }
 
     private void fireByCoords(final int x, final int y) {
+        coordsEdit.setText("");
         if (!playerUnderFire.getField().fire(x - 1, y - 1))
             System.out.println("This block cannot be fired");
         else {
