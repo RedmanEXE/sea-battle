@@ -21,6 +21,9 @@ jobs:
       contents: read
 
     steps:
+    - name: Jump into project folder
+    - run: cd project
+    
     - uses: actions/checkout@v4
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -54,6 +57,9 @@ jobs:
       contents: write
 
     steps:
+    - name: Jump into project folder
+    - run: cd project
+    
     - uses: actions/checkout@v4
     - name: Set up JDK 17
       uses: actions/setup-java@v4
