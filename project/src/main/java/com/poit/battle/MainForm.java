@@ -100,7 +100,7 @@ public class MainForm {
                         fileReadErrorDialog.setVisible(true);
                         return;
                     } else {
-                        DataChecker.FieldCheckError checkError = mainForm.player2Field.initFromFile(mapForPlayer1);
+                        DataChecker.FieldCheckError checkError = mainForm.player2Field.initFromFile(mapForPlayer2);
                         switch (checkError) {
                             case INVALID_DATA ->
                                     fileReadErrorLabel.setText("Файл 2 игрока содержит неверные данные!");
